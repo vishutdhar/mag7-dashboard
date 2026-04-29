@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Mag 7 valuation</title>
+<style>
+  :root {
+    --bg: #0a0d0f;
+    --panel: #11161a;
+    --line: #1c242b;
+    --fg: #d8dde3;
+    --dim: #6b7884;
+    --green: #4ade80;
+    --red: #f87171;
+    --amber: #fbbf24;
+    --accent: #67e8f9;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 13px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 20px 64px;
+  }
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .meta { color: var(--dim); font-size: 12px; }
+  .alerts {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 18px 0;
+    padding: 0;
+    list-style: none;
+  }
+  .alerts li {
+    background: var(--panel);
+    border-left: 2px solid var(--amber);
+    padding: 8px 12px;
+    color: var(--fg);
+  }
+  .alerts li.regime-winner { border-left-color: var(--accent); }
+  .alerts li.regime-cross  { border-left-color: var(--green); }
+  .alerts li.regime-flip   { border-left-color: var(--red); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+  }
+  th, td {
+    padding: 8px 10px;
+    text-align: right;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  th {
+    color: var(--dim);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  th:first-child, td:first-child { text-align: left; }
+  td.ticker { font-weight: 600; color: var(--accent); }
+  td.spark  { width: 90px; }
+  td.spark svg { display: block; }
+  .delta-up   { color: var(--green); }
+  .delta-down { color: var(--red); }
+  .delta-flat { color: var(--dim); }
+  .winner-row { background: rgba(103, 232, 249, 0.04); }
+  .footer {
+    margin-top: 22px;
+    color: var(--dim);
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .footer a { color: var(--dim); text-decoration: underline; }
+  .empty { color: var(--dim); padding: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Mag 7 valuation</h1>
+    <div class="meta" id="meta">loading…</div>
+  </header>
+  <ul class="alerts" id="alerts"></ul>
+  <div id="content" class="empty">loading data…</div>
+  <div class="footer">
+    <span>cron: weekdays 16:07 ET · source: yfinance · history: <span id="histcount">–</span> runs</span>
+    <a href="https://github.com/vishutdhar/mag7-dashboard" target="_blank" rel="noopener">repo</a>
+  </div>
+</main>
+<script>
+const fmt = (x, d = 2) =>
+  x === null || x === undefined || Number.isNaN(x) ? "—" : Number(x).toFixed(d);
+
+const pctDelta = (cur, prev) => {
+  if (cur == null || prev == null || prev === 0) return null;
+  return ((cur - prev) / prev) * 100;
+};
+
+const absDelta = (cur, prev) => {
+  if (cur == null || prev == null) return null;
+  return cur - prev;
+};
+
+const renderDelta = (v, suffix = "", digits = 2) => {
+  if (v == null) return '<span class="delta-flat">—</span>';
+  const cls = v > 0 ? "delta-up" : v < 0 ? "delta-down" : "delta-flat";
+  const sign = v > 0 ? "+" : "";
+  return `<span class="${cls}">${sign}${v.toFixed(digits)}${suffix}</span>`;
+};
+
+const sparkline = (values, w = 80, h = 22) => {
+  const clean = values.filter((v) => v != null && !Number.isNaN(v));
+  if (clean.length < 2) return "";
+  const min = Math.min(...clean);
+  const max = Math.max(...clean);
+  const range = max - min || 1;
+  const step = clean.length > 1 ? w / (clean.length - 1) : 0;
+  const points = clean
+    .map((v, i) => `${(i * step).toFixed(1)},${(h - ((v - min) / range) * h).toFixed(1)}`)
+    .join(" ");
+  const last = clean[clean.length - 1];
+  const first = clean[0];
+  const stroke = last >= first ? "var(--green)" : "var(--red)";
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <polyline points="${points}" fill="none" stroke="${stroke}" stroke-width="1.2" />
+  </svg>`;
+};
+
+const renderAlerts = (history) => {
+  const ul = document.getElementById("alerts");
+  ul.innerHTML = "";
+  if (history.length < 2) return;
+  const today = history[history.length - 1];
+  const prev  = history[history.length - 2];
+  const todayMap = Object.fromEntries(today.rows.map((r) => [r.ticker, r]));
+  const prevMap  = Object.fromEntries(prev.rows.map((r) => [r.ticker, r]));
+  const alerts = [];
+
+  if (today.winner !== prev.winner) {
+    alerts.push({
+      cls: "regime-winner",
+      msg: `Winner changed: ${prev.winner ?? "—"} → ${today.winner ?? "—"}`,
+    });
+  }
+
+  for (const t of Object.keys(todayMap)) {
+    const cur = todayMap[t];
+    const old = prevMap[t];
+    if (!cur || !old) continue;
+    if (cur.peg != null && old.peg != null) {
+      if (cur.peg < 1 && old.peg >= 1) alerts.push({ cls: "regime-cross", msg: `${t} PEG crossed below 1.0 (${fmt(cur.peg)})` });
+      if (cur.peg >= 1 && old.peg < 1) alerts.push({ cls: "regime-cross", msg: `${t} PEG crossed above 1.0 (${fmt(cur.peg)})` });
+    }
+    if (cur.eps_growth != null && old.eps_growth != null) {
+      if (cur.eps_growth > 0 && old.eps_growth <= 0) alerts.push({ cls: "regime-flip", msg: `${t} EPS growth flipped positive (${fmt(cur.eps_growth * 100, 1)}%)` });
+      if (cur.eps_growth <= 0 && old.eps_growth > 0) alerts.push({ cls: "regime-flip", msg: `${t} EPS growth flipped negative (${fmt(cur.eps_growth * 100, 1)}%)` });
+    }
+    if (cur.forward_pe != null && old.forward_pe != null) {
+      const pct = pctDelta(cur.forward_pe, old.forward_pe);
+      if (pct != null && Math.abs(pct) >= 5) {
+        alerts.push({ cls: "regime-flip", msg: `${t} Forward P/E moved ${pct > 0 ? "+" : ""}${pct.toFixed(1)}% (${fmt(cur.forward_pe)})` });
+      }
+    }
+  }
+
+  for (const a of alerts) {
+    const li = document.createElement("li");
+    li.className = a.cls;
+    li.textContent = a.msg;
+    ul.appendChild(li);
+  }
+};
+
+const render = (state) => {
+  const history = state.history || [];
+  const last = history[history.length - 1];
+  const prev = history.length >= 2 ? history[history.length - 2] : null;
+  const meta = document.getElementById("meta");
+  document.getElementById("histcount").textContent = history.length;
+
+  if (!last) {
+    document.getElementById("content").textContent = "no data yet";
+    return;
+  }
+
+  const checked = new Date(last.checked_at);
+  meta.textContent = `as of ${checked.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}`;
+
+  renderAlerts(history);
+
+  const prevMap = prev ? Object.fromEntries(prev.rows.map((r) => [r.ticker, r])) : {};
+  const sparkData = (ticker, key) =>
+    history.slice(-30).map((h) => h.rows.find((r) => r.ticker === ticker)?.[key] ?? null);
+
+  const head = `<tr>
+    <th>ticker</th><th>price</th><th>Δ price</th>
+    <th>trail P/E</th><th>fwd P/E</th><th>Δ fwd P/E</th>
+    <th>PEG</th><th>Δ PEG</th>
+    <th>EPS g%</th><th>PEG 30d</th>
+  </tr>`;
+
+  const rows = last.rows.map((r) => {
+    const o = prevMap[r.ticker] || {};
+    const isWinner = r.ticker === last.winner;
+    const pricePct = pctDelta(r.price, o.price);
+    const fpeAbs   = absDelta(r.forward_pe, o.forward_pe);
+    const pegAbs   = absDelta(r.peg, o.peg);
+    const epsG     = r.eps_growth != null ? r.eps_growth * 100 : null;
+    return `<tr class="${isWinner ? "winner-row" : ""}">
+      <td class="ticker">${r.ticker}${isWinner ? " ★" : ""}</td>
+      <td>${fmt(r.price)}</td>
+      <td>${renderDelta(pricePct, "%", 1)}</td>
+      <td>${fmt(r.trailing_pe)}</td>
+      <td>${fmt(r.forward_pe)}</td>
+      <td>${renderDelta(fpeAbs, "", 2)}</td>
+      <td>${fmt(r.peg)}</td>
+      <td>${renderDelta(pegAbs, "", 2)}</td>
+      <td>${fmt(epsG, 1)}</td>
+      <td class="spark">${sparkline(sparkData(r.ticker, "peg"))}</td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("content").innerHTML = `<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+};
+
+fetch("data/state.json", { cache: "no-store" })
+  .then((r) => {
+    if (!r.ok) throw new Error("state.json " + r.status);
+    return r.json();
+  })
+  .then(render)
+  .catch((err) => {
+    document.getElementById("content").textContent = "load failed: " + err.message;
+  });
+</script>
+</body>
+</html>
