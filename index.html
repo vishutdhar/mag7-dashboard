@@ -6,15 +6,27 @@
 <meta name="robots" content="noindex,nofollow" />
 <meta name="theme-color" content="#000000" />
 <title>Mag 7 Daily — Terminal</title>
+
+<!-- favicon (inline SVG: green pulse dot) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000'/%3E%3Ccircle cx='32' cy='32' r='14' fill='%2300ff88'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%2300ff88' stroke-opacity='0.35' stroke-width='2'/%3E%3C/svg%3E" />
+
+<!-- OG / Twitter -->
+<meta property="og:title" content="Mag 7 Daily — Terminal" />
+<meta property="og:description" content="Cheapest-for-growth across the Magnificent Seven. Black on neon. Updated weekdays 16:07 ET." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://vishutdhar.github.io/mag7-dashboard/" />
+<meta property="og:image" content="https://vishutdhar.github.io/mag7-dashboard/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Mag 7 Daily — Terminal" />
+<meta name="twitter:description" content="Cheapest-for-growth across the Magnificent Seven. Black on neon. Updated weekdays 16:07 ET." />
+<meta name="twitter:image" content="https://vishutdhar.github.io/mag7-dashboard/og.png" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-0:        #000000;
-    --bg-1:        #06070a;
-    --bg-2:        #0c0d12;
-    --bg-3:        #14161d;
     --line:        rgba(255,255,255,0.06);
     --line-strong: rgba(255,255,255,0.12);
     --text:        #f0f0f4;
@@ -87,6 +99,7 @@
     box-shadow: 0 0 10px var(--green), 0 0 20px var(--green-glow);
     animation: pulse 1.8s ease-in-out infinite;
   }
+  .live-dot.amber { background: var(--amber); box-shadow: 0 0 10px var(--amber), 0 0 20px rgba(255,200,87,0.20); }
   @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     50%      { opacity: 0.45; transform: scale(0.78); }
@@ -404,20 +417,116 @@
   .breaking-list .b-down { color: var(--red);   font-weight: 700; }
   .breaking-empty { color: var(--text-mute); font-style: italic; }
 
+  /* ───────── TIME MACHINE ───────── */
+  .time-machine {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #000;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .tm-btn {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line-strong);
+    background: #000;
+    color: var(--text-dim);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 14px; font-weight: 700;
+    user-select: none;
+  }
+  .tm-btn:hover:not(:disabled) { color: var(--green); border-color: var(--green); }
+  .tm-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .tm-label {
+    font-family: var(--mono);
+    font-size: 12px; letter-spacing: 0.06em;
+    color: var(--text);
+    min-width: 230px;
+    text-align: center;
+  }
+  .tm-label .lbl { color: var(--text-mute); margin-right: 8px; text-transform: uppercase; font-size: 10px; letter-spacing: 0.16em; }
+  .tm-counter { color: var(--text-mute); font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .tm-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-left: 12px;
+    font-family: var(--mono);
+    font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .tm-status.live  { color: var(--green); }
+  .tm-status.live::before  { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 1.8s ease-in-out infinite; }
+  .tm-status.past  { color: var(--amber); }
+  .tm-status.past::before  { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .tm-jump {
+    margin-left: 8px;
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-mute);
+    background: #000;
+    border: 1px solid var(--line-strong);
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .tm-jump:hover { color: var(--green); border-color: var(--green); }
+  .tm-jump:disabled { opacity: 0.2; cursor: not-allowed; }
+
   /* ───────── SECTION HEAD ───────── */
   .section-head {
-    display: flex; align-items: baseline; justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     margin: 36px 0 14px;
     gap: 16px;
+    flex-wrap: wrap;
   }
+  .section-head .left { display: flex; align-items: center; gap: 14px; }
   .section-title {
     font-size: 22px; font-weight: 700;
     letter-spacing: -0.015em;
   }
-  .section-by {
+  .filter-input {
+    appearance: none;
+    background: #000;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
     font-family: var(--mono);
-    font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    width: 220px;
+    letter-spacing: 0.04em;
+  }
+  .filter-input:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 1px var(--green-glow);
+  }
+  .filter-input::placeholder { color: var(--text-mute); }
+
+  .kbd-hints {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    font-family: var(--mono);
+    font-size: 9.5px;
     color: var(--text-mute);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    background: #000;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin: 0 2px;
+    line-height: 1.1;
+    font-family: var(--mono);
+    font-weight: 600;
   }
 
   /* ───────── TABLE ───────── */
@@ -425,7 +534,7 @@
     background: #000;
     border: 1px solid var(--line);
     border-radius: 14px;
-    overflow: hidden;
+    overflow: clip;
   }
   table.ledger {
     width: 100%;
@@ -446,7 +555,9 @@
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 5;
   }
   table.ledger thead th:first-child { text-align: left; padding-left: 22px; }
   table.ledger thead th:last-child  { padding-right: 22px; cursor: default; }
@@ -475,8 +586,8 @@
   table.ledger tbody td:last-child  { padding-right: 22px; }
   table.ledger tbody tr:last-child td { border-bottom: none; }
 
-  /* hover — instant, no transition (V hates slow hovers) */
-  table.ledger tbody tr:hover td {
+  /* hover — instant, no transition */
+  table.ledger tbody tr.data-row:hover td {
     background: rgba(255,255,255,0.025);
   }
   table.ledger tbody tr.winner-row td {
@@ -492,6 +603,15 @@
   table.ledger tbody tr.winner-row.thesis-row td {
     box-shadow: inset 3px 0 0 var(--green), inset 6px 0 0 var(--cyan);
   }
+  /* keyboard cursor — overlays winner/thesis without hiding their bars */
+  table.ledger tbody tr.is-cursor td {
+    background: rgba(255,200,87,0.07);
+    box-shadow: inset 0 1px 0 var(--amber), inset 0 -1px 0 var(--amber);
+  }
+  table.ledger tbody tr.winner-row.is-cursor td {
+    background: linear-gradient(90deg, rgba(0,255,136,0.08), rgba(0,255,136,0.01) 60%, rgba(255,200,87,0.05));
+    box-shadow: inset 3px 0 0 var(--green), inset 0 1px 0 var(--amber), inset 0 -1px 0 var(--amber);
+  }
 
   td.ticker-cell {
     font-family: var(--display);
@@ -499,7 +619,17 @@
     font-size: 16px;
     letter-spacing: 0.01em;
     color: var(--text);
+    cursor: pointer;
   }
+  td.ticker-cell .chev {
+    display: inline-block;
+    margin-right: 6px;
+    width: 10px;
+    color: var(--text-faint);
+    font-size: 0.78em;
+    vertical-align: middle;
+  }
+  tr.is-expanded td.ticker-cell .chev { color: var(--green); }
   td.ticker-cell .marks {
     display: inline-flex;
     gap: 5px;
@@ -522,6 +652,32 @@
     background: var(--cyan-glow); color: var(--cyan);
     border: 1px solid var(--cyan);
   }
+  td.ticker-cell .streak {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.10em;
+    vertical-align: middle;
+    line-height: 1.5;
+  }
+  td.ticker-cell .streak.up   { color: var(--green); border: 1px solid rgba(0,255,136,0.40); background: rgba(0,255,136,0.06); }
+  td.ticker-cell .streak.down { color: var(--red);   border: 1px solid rgba(255,59,92,0.40); background: rgba(255,59,92,0.06); }
+
+  /* heatmap PEG cell */
+  td.peg-cell {
+    position: relative;
+    font-weight: 700;
+  }
+  td.peg-cell .peg-bg {
+    position: absolute; inset: 6px 4px;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  td.peg-cell .peg-val { position: relative; z-index: 1; }
+
   td.spark { width: 120px; padding-right: 22px; padding-left: 6px; }
   td.spark svg { display: block; }
 
@@ -535,6 +691,35 @@
   .delta.up::before   { content: "▲ "; font-size: 0.7em; vertical-align: 0.18em; }
   .delta.down::before { content: "▼ "; font-size: 0.7em; vertical-align: 0.18em; }
   .delta.flat::before { content: "·  "; }
+
+  /* expand row */
+  tr.expand-row { background: #000; display: none; }
+  tr.is-expanded + tr.expand-row { display: table-row; }
+  tr.expand-row td {
+    padding: 14px 22px 22px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0,255,136,0.015);
+  }
+  .expand-charts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 760px) { .expand-charts { grid-template-columns: 1fr; } }
+  .expand-chart {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .expand-chart .chart-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--mono);
+    font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 8px;
+  }
+  .expand-chart .chart-head .v { color: var(--text); font-weight: 700; font-size: 11px; }
+  .expand-chart svg { width: 100%; height: 56px; display: block; }
 
   /* sparkline */
   svg.spark polyline { fill: none; stroke-linejoin: round; stroke-linecap: round; }
@@ -577,7 +762,7 @@
   .footer a { color: var(--text-dim); text-decoration: none; }
   .footer a:hover { color: var(--green); }
 
-  /* ───────── REVEAL & SKELETONS ───────── */
+  /* ───────── REVEAL ───────── */
   .reveal {
     opacity: 0; transform: translateY(8px);
     animation: reveal 600ms cubic-bezier(0.2, 0.7, 0.1, 1) forwards;
@@ -612,7 +797,7 @@
 
   <!-- STATUS BAR -->
   <div class="status-bar reveal reveal-1">
-    <span class="live-dot"></span>
+    <span class="live-dot" id="status-dot"></span>
     <span><span class="lbl">Session</span><span id="s-edition">—</span></span>
     <span class="sep">/</span>
     <span><span class="lbl">Updated</span><span id="s-since">—</span></span>
@@ -684,11 +869,32 @@
     </ul>
   </section>
 
+  <!-- TIME MACHINE -->
+  <div class="time-machine reveal reveal-4" id="time-machine">
+    <button class="tm-btn" id="tm-prev" aria-label="Previous session">‹</button>
+    <div class="tm-label">
+      <span class="lbl">Viewing</span>
+      <span id="tm-date">—</span>
+      <span class="tm-status live" id="tm-status">Live</span>
+    </div>
+    <button class="tm-btn" id="tm-next" aria-label="Next session">›</button>
+    <span class="tm-counter" id="tm-counter">— / —</span>
+    <button class="tm-jump" id="tm-jump">↪ Live</button>
+  </div>
+
   <!-- TAPE -->
   <section class="reveal reveal-4">
     <div class="section-head">
-      <div class="section-title">The Tape</div>
-      <div class="section-by">click any column to sort</div>
+      <div class="left">
+        <div class="section-title">The Tape</div>
+        <input class="filter-input" id="filter-input" type="text" placeholder="filter by ticker…" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="kbd-hints">
+        <span><span class="kbd">/</span> filter</span>
+        <span><span class="kbd">←</span><span class="kbd">→</span> session</span>
+        <span><span class="kbd">s</span> sort</span>
+        <span><span class="kbd">esc</span> reset</span>
+      </div>
     </div>
     <div class="table-wrap">
       <div id="content" class="empty">setting type…</div>
@@ -712,6 +918,10 @@
 
 <script>
 const THESIS = "META";
+const MAG7   = ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA"];
+const LS_SORT_KEY = "mag7.sort.key";
+const LS_SORT_DIR = "mag7.sort.dir";
+const SORT_CYCLE  = ["peg", "forward_pe", "price_d", "ticker"];
 
 const fmt = (x, d = 2) =>
   x === null || x === undefined || Number.isNaN(x) ? "—" : Number(x).toFixed(d);
@@ -732,6 +942,34 @@ const deltaSpan = (v, suffix = "", digits = 2) => {
   return `<span class="delta ${cls}">${sign}${v.toFixed(digits)}${suffix}</span>`;
 };
 
+// heatmap green→red along PEG axis
+const heatmapColor = (val, min, max) => {
+  if (val == null) return "transparent";
+  const t = Math.max(0, Math.min(1, (val - min) / (max - min || 1)));
+  const hue = 140 - t * 140; // green → red
+  const alpha = 0.14 + t * 0.18;
+  return `hsla(${hue}, 90%, 50%, ${alpha.toFixed(3)})`;
+};
+
+// streak across history (consecutive same-direction PEG steps ending at most-recent)
+const streakFor = (ticker, history) => {
+  const series = history
+    .map((h) => h.rows.find((r) => r.ticker === ticker)?.peg ?? null)
+    .filter((v) => v != null);
+  if (series.length < 2) return null;
+  let dir = 0, count = 0;
+  for (let i = series.length - 1; i > 0; i--) {
+    const d = series[i] < series[i - 1] ? -1 : series[i] > series[i - 1] ? +1 : 0;
+    if (d === 0) break;
+    if (dir === 0) { dir = d; count = 1; }
+    else if (d === dir) { count++; }
+    else break;
+  }
+  if (count < 2) return null;
+  // for PEG, lower is better — so down-streak is bullish (cheaper-for-growth)
+  return { dir, count };
+};
+
 // ─── animated counter ────────────────────────────────────────
 const countUp = (el, target, opts = {}) => {
   const { duration = 900, decimals = 2, suffix = "" } = opts;
@@ -750,21 +988,20 @@ const countUp = (el, target, opts = {}) => {
   requestAnimationFrame(tick);
 };
 
-// ─── time-since ──────────────────────────────────────────────
 const timeSince = (date) => {
   const s = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
-  if (s < 60)        return `${s}s ago`;
+  if (s < 60)   return `${s}s ago`;
   const m = Math.floor(s / 60);
-  if (m < 60)        return `${m}m ago`;
+  if (m < 60)   return `${m}m ago`;
   const h = Math.floor(m / 60);
-  if (h < 24)        return `${h}h ago`;
+  if (h < 24)   return `${h}h ago`;
   const d = Math.floor(h / 24);
   return `${d}d ago`;
 };
 
 // ─── sparkline ───────────────────────────────────────────────
 const sparkline = (values, opts = {}) => {
-  const { w = 110, h = 30, baselineAt = null, animate = true, area = true } = opts;
+  const { w = 110, h = 30, baselineAt = null, animate = true, area = true, forceColor = null } = opts;
   const clean = values.map((v) => (v == null || Number.isNaN(v) ? null : Number(v)));
   const present = clean.filter((v) => v != null);
   if (present.length < 2) return "";
@@ -783,7 +1020,7 @@ const sparkline = (values, opts = {}) => {
   const points = pts.join(" ");
   const first = present[0];
   const last  = present[present.length - 1];
-  const stroke = last >= first ? "var(--green)" : "var(--red)";
+  const stroke = forceColor || (last >= first ? "var(--green)" : "var(--red)");
   const lastX = (lastIdx * step).toFixed(1);
   const lastY = (h - ((last - min) / range) * (h - 4) - 2).toFixed(1);
 
@@ -793,7 +1030,6 @@ const sparkline = (values, opts = {}) => {
     baseline = `<line class="axis" x1="0" y1="${by}" x2="${w}" y2="${by}"/>`;
   }
 
-  // approx polyline length for stroke-dash
   let len = 0;
   for (let i = 1; i < pts.length; i++) {
     const [x1, y1] = pts[i - 1].split(",").map(Number);
@@ -829,7 +1065,6 @@ const renderMarquee = (last, prev) => {
     const dTxt = pct == null ? "—" : `${arrow} ${sign}${pct.toFixed(2)}%`;
     return `<span class="m-item"><span class="t">${r.ticker}</span><span class="p">${fmt(r.price)}</span><span class="d ${cls}">${dTxt}</span></span>`;
   }).join("");
-  // duplicate for seamless loop
   document.getElementById("marquee-track").innerHTML = items + items;
 };
 
@@ -894,14 +1129,12 @@ const renderHero = (last, prev) => {
   const pegΔ = prevWinner ? absDelta(winner.peg, prevWinner.peg) : null;
   const fpeΔ = prevWinner ? absDelta(winner.forward_pe, prevWinner.forward_pe) : null;
 
-  // animated count-ups
   countUp(document.getElementById("hero-peg"), winner.peg, { decimals: 2 });
   countUp(document.getElementById("hero-fpe"), winner.forward_pe, { decimals: 2 });
   countUp(document.getElementById("hero-eps"),
           winner.eps_growth != null ? winner.eps_growth * 100 : null,
           { decimals: 1, suffix: "%" });
 
-  // append delta chips after countup settles
   setTimeout(() => {
     const pegEl = document.getElementById("hero-peg");
     const fpeEl = document.getElementById("hero-fpe");
@@ -931,9 +1164,9 @@ const renderWatch = (history) => {
   document.getElementById("w-eps").innerHTML   = `${epsPct != null ? epsPct.toFixed(1) + "%" : "—"} <span class="delta-inline">${deltaSpan(epsDelta, "pp", 1)}</span>`;
 
   const series = history.slice(-30).map((h) => h.rows.find((r) => r.ticker === THESIS)?.peg ?? null);
+  const html = sparkline(series, { w: 320, h: 60, baselineAt: 1.0, area: true, forceColor: "var(--cyan)" });
   const svg = document.getElementById("w-spark");
-  const html = sparkline(series, { w: 320, h: 60, baselineAt: 1.0, area: true });
-  if (html) {
+  if (svg && html) {
     svg.outerHTML = html
       .replace('class="spark"', 'class="spark" id="w-spark"')
       .replace(`width="320"`, `width="100%" style="width:100%;height:60px"`);
@@ -942,13 +1175,14 @@ const renderWatch = (history) => {
 
 // ─── KPI strip ───────────────────────────────────────────────
 const renderKPIs = (last) => {
-  const rows = last.rows.filter(r => r.peg != null);
+  const rows = last.rows.filter((r) => r.peg != null);
   if (rows.length === 0) return;
   const sortedPeg = [...rows].sort((a, b) => a.peg - b.peg);
   const lead  = sortedPeg[0];
   const worst = sortedPeg[sortedPeg.length - 1];
-  const avgFpe = last.rows.reduce((s, r) => s + (r.forward_pe ?? 0), 0) / last.rows.filter(r => r.forward_pe != null).length;
-  const positiveEps = last.rows.filter(r => r.eps_growth != null && r.eps_growth > 0).length;
+  const fpeRows = last.rows.filter((r) => r.forward_pe != null);
+  const avgFpe = fpeRows.reduce((s, r) => s + r.forward_pe, 0) / fpeRows.length;
+  const positiveEps = last.rows.filter((r) => r.eps_growth != null && r.eps_growth > 0).length;
 
   countUp(document.getElementById("kpi-lead"), lead.peg, { decimals: 2 });
   document.getElementById("kpi-lead-t").textContent = lead.ticker;
@@ -958,8 +1192,22 @@ const renderKPIs = (last) => {
   countUp(document.getElementById("kpi-pos"), positiveEps, { decimals: 0, suffix: " / 7" });
 };
 
-// ─── table (sortable) ────────────────────────────────────────
-let _tableState = { last: null, prev: null, history: null, sortKey: "peg", sortDir: "asc" };
+// ─── table ───────────────────────────────────────────────────
+let _state = {
+  data: null, idx: -1,
+  sortKey: "peg", sortDir: "asc",
+  filter: "",
+  expanded: new Set(),
+  cursor: null,             // currently focused ticker (keyboard nav)
+  sortedTickers: [],        // last-rendered sort+filter order, for ↑/↓ walk
+};
+
+try {
+  const k = localStorage.getItem(LS_SORT_KEY);
+  const d = localStorage.getItem(LS_SORT_DIR);
+  if (k) _state.sortKey = k;
+  if (d) _state.sortDir = d;
+} catch {}
 
 const COLS = [
   { key: "ticker",      label: "Ticker",     sortable: true },
@@ -990,23 +1238,41 @@ const buildSortValue = (r, key, prevMap) => {
   }
 };
 
-const renderTable = () => {
-  const { last, history, sortKey, sortDir } = _tableState;
-  const prev = history.length >= 2 ? history[history.length - 2] : null;
+const renderTable = (last, prev, history) => {
   const prevMap = prev ? Object.fromEntries(prev.rows.map((r) => [r.ticker, r])) : {};
   const sparkData = (ticker) =>
     history.slice(-30).map((h) => h.rows.find((r) => r.ticker === ticker)?.peg ?? null);
+  const seriesData = (ticker, key) =>
+    history.slice(-30).map((h) => h.rows.find((r) => r.ticker === ticker)?.[key] ?? null);
 
-  const sorted = [...last.rows].sort((a, b) => {
+  const filterTxt = _state.filter.trim().toUpperCase();
+  const visibleRows = filterTxt
+    ? last.rows.filter((r) => r.ticker.toUpperCase().includes(filterTxt))
+    : last.rows;
+
+  const { sortKey, sortDir } = _state;
+  const sorted = [...visibleRows].sort((a, b) => {
     const av = buildSortValue(a, sortKey, prevMap);
     const bv = buildSortValue(b, sortKey, prevMap);
-    const aN = av == null ? Infinity : av;
-    const bN = bv == null ? Infinity : bv;
     if (sortKey === "ticker") {
       return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
     }
+    const aN = av == null ? Infinity : av;
+    const bN = bv == null ? Infinity : bv;
     return sortDir === "asc" ? aN - bN : bN - aN;
   });
+
+  // PEG heatmap range = visible PEG min/max
+  const pegVals = sorted.map((r) => r.peg).filter((v) => v != null);
+  const pegMin = pegVals.length ? Math.min(...pegVals) : 0;
+  const pegMax = pegVals.length ? Math.max(...pegVals) : 1;
+
+  // cache sort+filter order so ↑/↓ walk matches what's on screen
+  _state.sortedTickers = sorted.map((r) => r.ticker);
+  // drop cursor if it's been filtered out
+  if (_state.cursor && !_state.sortedTickers.includes(_state.cursor)) {
+    _state.cursor = null;
+  }
 
   const head = `<thead><tr>${COLS.map((c) => {
     const cls = (c.sortable === false ? "nosort" : "") +
@@ -1018,6 +1284,7 @@ const renderTable = () => {
     const o = prevMap[r.ticker] || {};
     const isWinner = r.ticker === last.winner;
     const isThesis = r.ticker === THESIS;
+    const isExpanded = _state.expanded.has(r.ticker);
     const pricePct = pctDelta(r.price, o.price);
     const fpeAbs   = absDelta(r.forward_pe, o.forward_pe);
     const pegAbs   = absDelta(r.peg, o.peg);
@@ -1028,34 +1295,88 @@ const renderTable = () => {
     if (isThesis) marks.push(`<span class="mark thesis">Thesis</span>`);
     const markHtml = marks.length ? `<span class="marks">${marks.join("")}</span>` : "";
 
-    return `<tr class="${isWinner ? "winner-row " : ""}${isThesis ? "thesis-row" : ""}">
-      <td class="ticker-cell">${r.ticker}${markHtml}</td>
+    const streak = streakFor(r.ticker, history);
+    const streakHtml = streak
+      ? `<span class="streak ${streak.dir < 0 ? "up" : "down"}">${streak.dir < 0 ? "PEG ↓" : "PEG ↑"} ${streak.count}d</span>`
+      : "";
+
+    const pegBg = heatmapColor(r.peg, pegMin, pegMax);
+
+    const cls = ["data-row"];
+    if (isWinner) cls.push("winner-row");
+    if (isThesis) cls.push("thesis-row");
+    if (isExpanded) cls.push("is-expanded");
+    if (_state.cursor === r.ticker) cls.push("is-cursor");
+
+    const dataRow = `<tr class="${cls.join(" ")}" data-ticker="${r.ticker}">
+      <td class="ticker-cell"><span class="chev">${isExpanded ? "▾" : "▸"}</span>${r.ticker}${markHtml}${streakHtml}</td>
       <td>${fmt(r.price)}</td>
       <td>${deltaSpan(pricePct, "%", 1)}</td>
       <td>${fmt(r.trailing_pe)}</td>
       <td>${fmt(r.forward_pe)}</td>
       <td>${deltaSpan(fpeAbs, "", 2)}</td>
-      <td>${fmt(r.peg)}</td>
+      <td class="peg-cell"><span class="peg-bg" style="background:${pegBg}"></span><span class="peg-val">${fmt(r.peg)}</span></td>
       <td>${deltaSpan(pegAbs, "", 2)}</td>
       <td>${fmt(epsG, 1)}${epsG != null ? "%" : ""}</td>
       <td class="spark">${sparkline(sparkData(r.ticker), { w: 110, h: 30, baselineAt: 1.0 })}</td>
     </tr>`;
+
+    const expandRow = `<tr class="expand-row"><td colspan="${COLS.length}">
+      <div class="expand-charts">
+        <div class="expand-chart">
+          <div class="chart-head"><span>Price · 30d</span><span class="v">${fmt(r.price)}</span></div>
+          ${sparkline(seriesData(r.ticker, "price"), { w: 280, h: 56, animate: false }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
+        </div>
+        <div class="expand-chart">
+          <div class="chart-head"><span>PEG · 30d</span><span class="v">${fmt(r.peg)}</span></div>
+          ${sparkline(seriesData(r.ticker, "peg"), { w: 280, h: 56, baselineAt: 1.0, animate: false }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
+        </div>
+        <div class="expand-chart">
+          <div class="chart-head"><span>Fwd P/E · 30d</span><span class="v">${fmt(r.forward_pe)}</span></div>
+          ${sparkline(seriesData(r.ticker, "forward_pe"), { w: 280, h: 56, animate: false }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
+        </div>
+      </div>
+    </td></tr>`;
+
+    return dataRow + expandRow;
   }).join("");
 
-  document.getElementById("content").outerHTML =
-    `<table class="ledger" id="content">${head}<tbody>${rows}</tbody></table>`;
+  const tableHtml = sorted.length === 0
+    ? `<div class="empty">no tickers match "${filterTxt}"</div>`
+    : `<table class="ledger" id="content">${head}<tbody>${rows}</tbody></table>`;
 
+  const target = document.getElementById("content");
+  target.outerHTML = tableHtml.startsWith("<div")
+    ? `<div id="content" class="empty">no tickers match "${filterTxt}"</div>`
+    : tableHtml;
+
+  // wire header sort
   document.querySelectorAll("table.ledger thead th").forEach((th) => {
     if (th.classList.contains("nosort")) return;
     th.addEventListener("click", () => {
       const key = th.dataset.key;
-      if (_tableState.sortKey === key) {
-        _tableState.sortDir = _tableState.sortDir === "asc" ? "desc" : "asc";
+      if (_state.sortKey === key) {
+        _state.sortDir = _state.sortDir === "asc" ? "desc" : "asc";
       } else {
-        _tableState.sortKey = key;
-        _tableState.sortDir = "asc";
+        _state.sortKey = key;
+        _state.sortDir = "asc";
       }
-      renderTable();
+      try {
+        localStorage.setItem(LS_SORT_KEY, _state.sortKey);
+        localStorage.setItem(LS_SORT_DIR, _state.sortDir);
+      } catch {}
+      renderTable(last, prev, history);
+    });
+  });
+
+  // wire expand
+  document.querySelectorAll("table.ledger tr.data-row td.ticker-cell").forEach((cell) => {
+    cell.addEventListener("click", () => {
+      const tr = cell.parentElement;
+      const ticker = tr.dataset.ticker;
+      if (_state.expanded.has(ticker)) _state.expanded.delete(ticker);
+      else _state.expanded.add(ticker);
+      renderTable(last, prev, history);
     });
   });
 };
@@ -1063,27 +1384,147 @@ const renderTable = () => {
 // ─── meta / status ───────────────────────────────────────────
 let _lastChecked = null;
 
-const renderMeta = (state) => {
-  const history = state.history || [];
-  const last = history[history.length - 1];
-  const checked = last ? new Date(last.checked_at) : new Date(state.last_checked_at);
+const renderMeta = (last, totalSessions) => {
+  const checked = new Date(last.checked_at);
   _lastChecked = checked;
   const longDate = checked.toLocaleDateString(undefined, {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
   const time = checked.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   document.getElementById("m-date").textContent = longDate;
-  document.getElementById("m-edition").textContent = String(history.length).padStart(3, "0");
-  document.getElementById("s-edition").textContent = `No.${String(history.length).padStart(3, "0")}`;
+  document.getElementById("m-edition").textContent = String(_state.idx + 1).padStart(3, "0");
+  document.getElementById("s-edition").textContent = `No.${String(_state.idx + 1).padStart(3, "0")}`;
   document.getElementById("s-since").textContent = timeSince(checked);
   document.getElementById("c-when").textContent = `${longDate}, ${time}`;
-  document.getElementById("c-runs").textContent = history.length;
+  document.getElementById("c-runs").textContent = totalSessions;
 };
 
-// auto-tick the "X ago"
 setInterval(() => {
   if (_lastChecked) document.getElementById("s-since").textContent = timeSince(_lastChecked);
 }, 30000);
+
+// ─── time machine ────────────────────────────────────────────
+const renderTimeMachine = () => {
+  const total = _state.data.history.length;
+  const onLive = _state.idx === total - 1;
+  const checked = new Date(_state.data.history[_state.idx].checked_at);
+  const niceDate = checked.toLocaleDateString(undefined, {
+    weekday: "short", month: "short", day: "numeric",
+  });
+  document.getElementById("tm-date").textContent = niceDate;
+  document.getElementById("tm-counter").textContent = `${_state.idx + 1} / ${total}`;
+  const status = document.getElementById("tm-status");
+  status.className = "tm-status " + (onLive ? "live" : "past");
+  status.textContent = onLive ? "Live" : "History";
+  document.getElementById("tm-prev").disabled = _state.idx <= 0;
+  document.getElementById("tm-next").disabled = _state.idx >= total - 1;
+  document.getElementById("tm-jump").disabled = onLive;
+  // status bar dot mirrors live/past state
+  const dot = document.getElementById("status-dot");
+  if (dot) dot.classList.toggle("amber", !onLive);
+};
+
+const stepSession = (delta) => {
+  const total = _state.data.history.length;
+  const newIdx = Math.max(0, Math.min(total - 1, _state.idx + delta));
+  if (newIdx === _state.idx) return;
+  _state.idx = newIdx;
+  applySession();
+};
+
+const applySession = () => {
+  const history = _state.data.history;
+  const histSlice = history.slice(0, _state.idx + 1);
+  const last = histSlice[histSlice.length - 1];
+  const prev = histSlice.length >= 2 ? histSlice[histSlice.length - 2] : null;
+  renderTimeMachine();
+  renderMeta(last, history.length);
+  renderMarquee(last, prev);
+  renderHero(last, prev);
+  renderWatch(histSlice);
+  renderKPIs(last);
+  renderBreaking(histSlice);
+  renderTable(last, prev, histSlice);
+};
+
+// ─── keyboard shortcuts ──────────────────────────────────────
+const setCursor = (ticker) => {
+  if (!ticker || !_state.sortedTickers.includes(ticker)) return;
+  _state.cursor = ticker;
+  applySession();
+  // scroll the focused row into view
+  const row = document.querySelector(`tr.data-row[data-ticker="${ticker}"]`);
+  if (row && typeof row.scrollIntoView === "function") {
+    row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+};
+
+const walkCursor = (delta) => {
+  const order = _state.sortedTickers;
+  if (!order.length) return;
+  const cur = _state.cursor;
+  const i = cur ? order.indexOf(cur) : -1;
+  let next;
+  if (i === -1) next = delta > 0 ? order[0] : order[order.length - 1];
+  else next = order[(i + delta + order.length) % order.length];
+  setCursor(next);
+};
+
+document.addEventListener("keydown", (e) => {
+  const tag = (e.target.tagName || "").toUpperCase();
+  const inInput = tag === "INPUT" || tag === "TEXTAREA";
+
+  // / → focus filter
+  if (e.key === "/" && !inInput) {
+    e.preventDefault();
+    document.getElementById("filter-input")?.focus();
+    return;
+  }
+  // Escape → clear filter, jump to live, collapse all, drop cursor
+  if (e.key === "Escape") {
+    document.getElementById("filter-input").value = "";
+    _state.filter = "";
+    _state.expanded.clear();
+    _state.cursor = null;
+    _state.idx = _state.data.history.length - 1;
+    applySession();
+    document.getElementById("filter-input").blur();
+    return;
+  }
+  if (inInput) return;
+  // ←  → step session
+  if (e.key === "ArrowLeft")  { e.preventDefault(); stepSession(-1); return; }
+  if (e.key === "ArrowRight") { e.preventDefault(); stepSession(+1); return; }
+  // ↑ ↓ → walk rows
+  if (e.key === "ArrowUp")    { e.preventDefault(); walkCursor(-1); return; }
+  if (e.key === "ArrowDown")  { e.preventDefault(); walkCursor(+1); return; }
+  // 1-7 → jump to ticker by MAG7 position
+  if (e.key >= "1" && e.key <= "7") {
+    const t = MAG7[Number(e.key) - 1];
+    if (t) { e.preventDefault(); setCursor(t); }
+    return;
+  }
+  // Enter → toggle expand on focused row
+  if (e.key === "Enter" && _state.cursor) {
+    e.preventDefault();
+    if (_state.expanded.has(_state.cursor)) _state.expanded.delete(_state.cursor);
+    else _state.expanded.add(_state.cursor);
+    applySession();
+    return;
+  }
+  // s → cycle sort
+  if (e.key === "s" || e.key === "S") {
+    e.preventDefault();
+    const i = SORT_CYCLE.indexOf(_state.sortKey);
+    _state.sortKey = SORT_CYCLE[(i + 1) % SORT_CYCLE.length];
+    _state.sortDir = "asc";
+    try {
+      localStorage.setItem(LS_SORT_KEY, _state.sortKey);
+      localStorage.setItem(LS_SORT_DIR, _state.sortDir);
+    } catch {}
+    applySession();
+  }
+});
 
 // ─── boot ────────────────────────────────────────────────────
 fetch("data/state.json", { cache: "no-store" })
@@ -1094,16 +1535,24 @@ fetch("data/state.json", { cache: "no-store" })
       document.getElementById("content").textContent = "no sessions on file yet.";
       return;
     }
-    const last = history[history.length - 1];
-    const prev = history.length >= 2 ? history[history.length - 2] : null;
-    _tableState = { last, prev, history, sortKey: "peg", sortDir: "asc" };
-    renderMeta(state);
-    renderMarquee(last, prev);
-    renderHero(last, prev);
-    renderWatch(history);
-    renderKPIs(last);
-    renderBreaking(history);
-    renderTable();
+    _state.data = state;
+    _state.idx = history.length - 1;
+    applySession();
+
+    document.getElementById("tm-prev").addEventListener("click", () => stepSession(-1));
+    document.getElementById("tm-next").addEventListener("click", () => stepSession(+1));
+    document.getElementById("tm-jump").addEventListener("click", () => {
+      _state.idx = _state.data.history.length - 1;
+      applySession();
+    });
+    document.getElementById("filter-input").addEventListener("input", (e) => {
+      _state.filter = e.target.value;
+      const history = _state.data.history;
+      const histSlice = history.slice(0, _state.idx + 1);
+      const last = histSlice[histSlice.length - 1];
+      const prev = histSlice.length >= 2 ? histSlice[histSlice.length - 2] : null;
+      renderTable(last, prev, histSlice);
+    });
   })
   .catch((err) => {
     document.getElementById("content").innerHTML =
