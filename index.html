@@ -179,6 +179,8 @@
     line-height: 0.95;
     letter-spacing: -0.045em;
     margin: 0;
+    /* room below baseline so background-clip:text covers descenders (g, y) */
+    padding-bottom: 0.18em;
     background: linear-gradient(180deg, #ffffff 0%, #6e6e78 100%);
     -webkit-background-clip: text;
     background-clip: text;
@@ -196,7 +198,7 @@
     filter: drop-shadow(0 0 24px rgba(0,255,136,0.25));
   }
   .header .sub {
-    margin-top: 10px;
+    margin-top: 2px;
     font-family: var(--mono);
     font-size: 11px;
     letter-spacing: 0.2em;
