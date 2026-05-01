@@ -573,6 +573,12 @@
     border-radius: 14px;
     overflow: clip;
   }
+  @media (max-width: 880px) {
+    .table-wrap {
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
   table.ledger {
     width: 100%;
     border-collapse: collapse;
@@ -935,7 +941,7 @@
         <span><span class="kbd">esc</span> reset</span>
       </div>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="tape">
       <div id="content" class="empty">setting type…</div>
     </div>
   </section>
@@ -1277,7 +1283,8 @@ const buildSortValue = (r, key, prevMap) => {
   }
 };
 
-const renderTable = (last, prev, history) => {
+const renderTable = (last, prev, history, opts = {}) => {
+  const { animate = true } = opts;
   const prevMap = prev ? Object.fromEntries(prev.rows.map((r) => [r.ticker, r])) : {};
   const sparkData = (ticker) =>
     history.slice(-30).map((h) => h.rows.find((r) => r.ticker === ticker)?.peg ?? null);
@@ -1357,7 +1364,7 @@ const renderTable = (last, prev, history) => {
       <td class="peg-cell"><span class="peg-bg" style="background:${pegBg}"></span><span class="peg-val">${fmt(r.peg)}</span></td>
       <td>${deltaSpan(pegAbs, "", 2)}</td>
       <td>${fmt(epsG, 1)}${epsG != null ? "%" : ""}</td>
-      <td class="spark">${sparkline(sparkData(r.ticker), { w: 110, h: 30, baselineAt: 1.0 })}</td>
+      <td class="spark">${sparkline(sparkData(r.ticker), { w: 110, h: 30, baselineAt: 1.0, animate })}</td>
     </tr>`;
 
     const expandRow = `<tr class="expand-row"><td colspan="${COLS.length}">
@@ -1404,7 +1411,7 @@ const renderTable = (last, prev, history) => {
         localStorage.setItem(LS_SORT_KEY, _state.sortKey);
         localStorage.setItem(LS_SORT_DIR, _state.sortDir);
       } catch {}
-      renderTable(last, prev, history);
+      renderTable(last, prev, history, { animate: false });
     });
   });
 
@@ -1415,7 +1422,7 @@ const renderTable = (last, prev, history) => {
       const ticker = tr.dataset.ticker;
       if (_state.expanded.has(ticker)) _state.expanded.delete(ticker);
       else _state.expanded.add(ticker);
-      renderTable(last, prev, history);
+      renderTable(last, prev, history, { animate: false });
     });
   });
 };
@@ -1590,7 +1597,7 @@ fetch("data/state.json", { cache: "no-store" })
       const histSlice = history.slice(0, _state.idx + 1);
       const last = histSlice[histSlice.length - 1];
       const prev = histSlice.length >= 2 ? histSlice[histSlice.length - 2] : null;
-      renderTable(last, prev, histSlice);
+      renderTable(last, prev, histSlice, { animate: false });
     });
   })
   .catch((err) => {
