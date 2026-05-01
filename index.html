@@ -1134,8 +1134,20 @@ const renderBreaking = (history) => {
     const c = tMap[t], o = pMap[t];
     if (!c || !o) continue;
     if (c.peg != null && o.peg != null) {
-      if (c.peg < 1 && o.peg >= 1) items.push(`<span class="b-ticker">${t}</span> PEG crosses <span class="b-up">below 1.0</span> to <span class="b-num">${fmt(c.peg)}</span> — value-with-growth zone.`);
-      if (c.peg >= 1 && o.peg < 1) items.push(`<span class="b-ticker">${t}</span> PEG returns <span class="b-down">above 1.0</span> to <span class="b-num">${fmt(c.peg)}</span>.`);
+      const crossedDown = (c.peg < 1 && o.peg >= 1);
+      const crossedUp   = (c.peg >= 1 && o.peg < 1);
+      if (crossedDown) items.push(`<span class="b-ticker">${t}</span> PEG crosses <span class="b-up">below 1.0</span> to <span class="b-num">${fmt(c.peg)}</span> — value-with-growth zone.`);
+      if (crossedUp)   items.push(`<span class="b-ticker">${t}</span> PEG returns <span class="b-down">above 1.0</span> to <span class="b-num">${fmt(c.peg)}</span>.`);
+      if (!crossedDown && !crossedUp) {
+        const pegPct = pctDelta(c.peg, o.peg);
+        // PEG = P/E ÷ growth%. Growth estimates rarely revise day-over-day,
+        // so PEG day-over-day moves are typically ~5–10× smaller than P/E.
+        // Threshold accordingly (1% for PEG vs 5% for P/E below).
+        if (pegPct != null && Math.abs(pegPct) >= 1) {
+          const cls = pegPct > 0 ? "b-down" : "b-up";
+          items.push(`<span class="b-ticker">${t}</span> PEG moves <span class="${cls}">${pegPct > 0 ? "+" : ""}${pegPct.toFixed(1)}%</span> to <span class="b-num">${fmt(c.peg)}</span>.`);
+        }
+      }
     }
     if (c.eps_growth != null && o.eps_growth != null) {
       if (c.eps_growth > 0 && o.eps_growth <= 0) items.push(`<span class="b-ticker">${t}</span> EPS growth flips <span class="b-up">positive</span> at <span class="b-num">${fmt(c.eps_growth * 100, 1)}%</span>.`);
