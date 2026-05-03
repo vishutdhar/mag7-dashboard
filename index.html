@@ -901,6 +901,109 @@
   }
   .empty.error { color: var(--red); }
 
+  /* ───────── PRINT ─────────
+     Editorial broadsheet treatment for the "Daily" — strip animations,
+     glows, gradients, and color signalling; render in single-color ink
+     on white with hairline rules. Landscape letter fits the 10-col table. */
+  @media print {
+    @page { size: letter landscape; margin: 0.5in; }
+
+    /* Repoint design tokens to print-safe ink so anything using var()
+       (most of the page) flips automatically — no per-rule overrides. */
+    :root {
+      --bg-0:        #ffffff;
+      --text:        #000000;
+      --text-dim:    #1a1a1a;
+      --text-mute:   #555555;
+      --text-faint:  #888888;
+      --line:        #000000;
+      --line-strong: #000000;
+      --green:       #000000;
+      --green-soft:  #000000;
+      --green-glow:  transparent;
+      --red:         #000000;
+      --red-soft:    #000000;
+      --red-glow:    transparent;
+      --cyan:        #000000;
+      --cyan-glow:   transparent;
+      --amber:       #000000;
+    }
+
+    html, body {
+      background: #fff !important;
+      color: #000 !important;
+      font-size: 10px;
+    }
+    body::after { display: none !important; }       /* grain off */
+    main { max-width: none !important; padding: 0 !important; }
+
+    /* hide interactive / live-only chrome */
+    .marquee, .kbd-hints, .filter-wrap, .time-machine,
+    .stale-banner, .live-dot, tr.expand-row {
+      display: none !important;
+    }
+
+    /* play any remaining keyframes/transforms from a settled state */
+    .reveal { opacity: 1 !important; transform: none !important; animation: none !important; }
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+      box-shadow: none !important;
+      filter: none !important;
+      text-shadow: none !important;
+    }
+
+    /* masthead: solid black, no gradient */
+    .header h1, .header h1 em {
+      background: none !important;
+      -webkit-text-fill-color: #000 !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+      color: #000 !important;
+    }
+    .header { margin: 18px 0 14px !important; page-break-after: avoid; }
+    .header h1 { font-size: 56px !important; padding-bottom: 0.12em; }
+    .hero-ticker { font-size: 56px !important; }
+
+    /* cards / strips: white, square, hairline */
+    .status-bar, .card, .kpi, .breaking, .table-wrap, .footer {
+      background: #fff !important;
+      border-radius: 0 !important;
+      page-break-inside: avoid;
+    }
+    .card.hero { border-color: #000 !important; }   /* hardcoded cyan rgba — needs explicit override */
+    .hero-grid, .kpi-strip { gap: 10px !important; }
+
+    /* badges/pills/marks/tags → outlined ink-only */
+    .hero-ticker .badge, .watch-tag, .card-eyebrow .pill,
+    .breaking-tag, td.ticker-cell .mark, td.ticker-cell .streak {
+      background: transparent !important;
+    }
+    .breaking-tag::before { background: #000 !important; }
+
+    /* table: kill row tints + PEG heatmap */
+    table.ledger thead th { background: transparent !important; }
+    table.ledger thead th .arrow { display: none !important; }
+    table.ledger tbody tr.winner-row td,
+    table.ledger tbody tr.thesis-row td,
+    table.ledger tbody tr.winner-row.thesis-row td,
+    table.ledger tbody tr.is-cursor td,
+    table.ledger tbody tr.data-row:hover td {
+      background: transparent !important;
+    }
+    td.peg-cell .peg-bg { display: none !important; }
+
+    /* sparklines: black ink. Stroke is inline (stroke=var(--green) etc.),
+       so target the polyline directly to win specificity. */
+    svg.spark, svg.spark polyline { stroke: #000 !important; color: #000 !important; }
+    svg.spark .end { fill: #000 !important; }
+    svg.spark .area { display: none !important; }
+
+    /* footer: simple, no spinning ∞ on hover */
+    .footer .center { transform: none !important; }
+    .footer a { text-decoration: underline; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
