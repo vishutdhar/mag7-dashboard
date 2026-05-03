@@ -559,6 +559,10 @@
     font-size: 22px; font-weight: 700;
     letter-spacing: -0.015em;
   }
+  .filter-wrap {
+    position: relative;
+    display: inline-block;
+  }
   .filter-input {
     appearance: none;
     background: #000;
@@ -566,7 +570,7 @@
     color: var(--text);
     font-family: var(--mono);
     font-size: 12px;
-    padding: 7px 12px;
+    padding: 7px 28px 7px 12px;       /* room for the clear button */
     border-radius: 8px;
     width: 220px;
     letter-spacing: 0.04em;
@@ -577,6 +581,37 @@
     box-shadow: 0 0 0 1px var(--green-glow);
   }
   .filter-input::placeholder { color: var(--text-mute); }
+
+  .filter-clear {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    color: var(--text-mute);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .filter-clear:hover { color: var(--green); border-color: var(--green); }
+  .filter-clear[hidden] { display: none; }
+
+  /* Pause infinite CSS animations when the tab is backgrounded — saves CPU/battery. */
+  body.tab-hidden .marquee-track,
+  body.tab-hidden .live-dot,
+  body.tab-hidden .breaking-tag::before,
+  body.tab-hidden .tm-status.live::before {
+    animation-play-state: paused !important;
+  }
 
   .kbd-hints {
     display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
@@ -984,7 +1019,10 @@
     <div class="section-head">
       <div class="left">
         <h2 class="section-title">The Tape</h2>
-        <input class="filter-input" id="filter-input" type="text" placeholder="filter by ticker…" aria-label="Filter table by ticker symbol" autocomplete="off" spellcheck="false" />
+        <div class="filter-wrap">
+          <input class="filter-input" id="filter-input" type="text" placeholder="filter by ticker…" aria-label="Filter table by ticker symbol" autocomplete="off" spellcheck="false" />
+          <button class="filter-clear" id="filter-clear" type="button" aria-label="Clear filter" hidden>×</button>
+        </div>
       </div>
       <div class="kbd-hints" aria-label="Keyboard shortcuts">
         <span><kbd class="kbd">/</kbd> filter</span>
@@ -1018,7 +1056,8 @@ const THESIS = "META";
 const MAG7   = ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA"];
 const LS_SORT_KEY = "mag7.sort.key";
 const LS_SORT_DIR = "mag7.sort.dir";
-const SORT_CYCLE  = ["peg", "forward_pe", "price_d", "ticker"];
+// All 9 sortable columns in display order — keep in sync with COLS below.
+const SORT_CYCLE  = ["ticker", "price", "price_d", "trailing_pe", "forward_pe", "fwd_pe_d", "peg", "peg_d", "eps_growth"];
 
 const fmt = (x, d = 2) =>
   x === null || x === undefined || Number.isNaN(x) ? "—" : Number(x).toFixed(d);
@@ -1069,9 +1108,13 @@ const streakFor = (ticker, history) => {
 
 // ─── animated counter ────────────────────────────────────────
 const countUp = (el, target, opts = {}) => {
-  const { duration = 900, decimals = 2, suffix = "" } = opts;
+  const { duration = 900, decimals = 2, suffix = "", instant = false } = opts;
   if (target == null || Number.isNaN(target)) {
     el.textContent = "—";
+    return;
+  }
+  if (instant) {
+    el.textContent = target.toFixed(decimals) + suffix;
     return;
   }
   const start = performance.now();
@@ -1228,7 +1271,8 @@ const renderBreaking = (history) => {
 };
 
 // ─── hero ────────────────────────────────────────────────────
-const renderHero = (last, prev) => {
+const renderHero = (last, prev, opts = {}) => {
+  const { animate = true } = opts;
   const winner = last.rows.find((r) => r.ticker === last.winner);
   const heroTicker = document.getElementById("hero-ticker");
   if (!winner) {
@@ -1244,18 +1288,20 @@ const renderHero = (last, prev) => {
   const pegΔ = prevWinner ? absDelta(winner.peg, prevWinner.peg) : null;
   const fpeΔ = prevWinner ? absDelta(winner.forward_pe, prevWinner.forward_pe) : null;
 
-  countUp(document.getElementById("hero-peg"), winner.peg, { decimals: 2 });
-  countUp(document.getElementById("hero-fpe"), winner.forward_pe, { decimals: 2 });
+  countUp(document.getElementById("hero-peg"), winner.peg, { decimals: 2, instant: !animate });
+  countUp(document.getElementById("hero-fpe"), winner.forward_pe, { decimals: 2, instant: !animate });
   countUp(document.getElementById("hero-eps"),
           winner.eps_growth != null ? winner.eps_growth * 100 : null,
-          { decimals: 1, suffix: "%" });
+          { decimals: 1, suffix: "%", instant: !animate });
 
-  setTimeout(() => {
+  const applyDelta = () => {
     const pegEl = document.getElementById("hero-peg");
     const fpeEl = document.getElementById("hero-fpe");
     if (pegΔ != null) pegEl.innerHTML = pegEl.textContent + ` <span class="delta-inline ${pegΔ < 0 ? "up" : pegΔ > 0 ? "down" : "flat"}">${pegΔ > 0 ? "+" : ""}${pegΔ.toFixed(2)}</span>`;
     if (fpeΔ != null) fpeEl.innerHTML = fpeEl.textContent + ` <span class="delta-inline ${fpeΔ < 0 ? "up" : fpeΔ > 0 ? "down" : "flat"}">${fpeΔ > 0 ? "+" : ""}${fpeΔ.toFixed(2)}</span>`;
-  }, 950);
+  };
+  if (animate) setTimeout(applyDelta, 950);
+  else applyDelta();
 };
 
 // ─── watch ───────────────────────────────────────────────────
@@ -1289,7 +1335,8 @@ const renderWatch = (history) => {
 };
 
 // ─── KPI strip ───────────────────────────────────────────────
-const renderKPIs = (last) => {
+const renderKPIs = (last, opts = {}) => {
+  const { animate = true } = opts;
   const rows = last.rows.filter((r) => r.peg != null);
   if (rows.length === 0) return;
   const sortedPeg = [...rows].sort((a, b) => a.peg - b.peg);
@@ -1299,12 +1346,13 @@ const renderKPIs = (last) => {
   const avgFpe = fpeRows.reduce((s, r) => s + r.forward_pe, 0) / fpeRows.length;
   const positiveEps = last.rows.filter((r) => r.eps_growth != null && r.eps_growth > 0).length;
 
-  countUp(document.getElementById("kpi-lead"), lead.peg, { decimals: 2 });
+  const inst = !animate;
+  countUp(document.getElementById("kpi-lead"), lead.peg, { decimals: 2, instant: inst });
   document.getElementById("kpi-lead-t").textContent = lead.ticker;
-  countUp(document.getElementById("kpi-worst"), worst.peg, { decimals: 2 });
+  countUp(document.getElementById("kpi-worst"), worst.peg, { decimals: 2, instant: inst });
   document.getElementById("kpi-worst-t").textContent = worst.ticker;
-  countUp(document.getElementById("kpi-avgpe"), avgFpe, { decimals: 1 });
-  countUp(document.getElementById("kpi-pos"), positiveEps, { decimals: 0, suffix: " / 7" });
+  countUp(document.getElementById("kpi-avgpe"), avgFpe, { decimals: 1, instant: inst });
+  countUp(document.getElementById("kpi-pos"), positiveEps, { decimals: 0, suffix: " / 7", instant: inst });
 };
 
 // ─── table ───────────────────────────────────────────────────
@@ -1531,15 +1579,20 @@ const isDataStale = (checked) => {
 const renderMeta = (last, totalSessions) => {
   const checked = new Date(last.checked_at);
   _lastChecked = checked;
-  const longDate = checked.toLocaleDateString(undefined, {
-    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  // Cron is NYSE-tied; render dates in ET regardless of viewer timezone so the
+  // masthead always reads as the trading-day stamp.
+  const ET = "America/New_York";
+  const longDate = checked.toLocaleDateString("en-US", {
+    timeZone: ET, weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
-  const time = checked.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const time = checked.toLocaleTimeString("en-US", {
+    timeZone: ET, hour: "numeric", minute: "2-digit",
+  });
   document.getElementById("m-date").textContent = longDate;
   document.getElementById("m-edition").textContent = String(_state.idx + 1).padStart(3, "0");
   document.getElementById("s-edition").textContent = `No.${String(_state.idx + 1).padStart(3, "0")}`;
   document.getElementById("s-since").textContent = timeSince(checked);
-  document.getElementById("c-when").textContent = `${longDate}, ${time}`;
+  document.getElementById("c-when").textContent = `${longDate}, ${time} ET`;
   document.getElementById("c-runs").textContent = totalSessions;
 
   // Only flag staleness on the latest session, not when scrubbing through history.
@@ -1548,7 +1601,7 @@ const renderMeta = (last, totalSessions) => {
     const onLatest = _state.idx === _state.data.history.length - 1;
     const stale = onLatest && isDataStale(checked);
     if (stale) {
-      document.getElementById("stale-when").textContent = `${longDate}, ${time}`;
+      document.getElementById("stale-when").textContent = `${longDate}, ${time} ET`;
       banner.hidden = false;
     } else {
       banner.hidden = true;
@@ -1556,17 +1609,28 @@ const renderMeta = (last, totalSessions) => {
   }
 };
 
-setInterval(() => {
-  if (_lastChecked) document.getElementById("s-since").textContent = timeSince(_lastChecked);
-}, 30000);
+// Cancellable so we can stop the timer when the tab is backgrounded.
+let _sinceTimer = null;
+const startSinceTimer = () => {
+  if (_sinceTimer != null) return;
+  _sinceTimer = setInterval(() => {
+    if (_lastChecked) document.getElementById("s-since").textContent = timeSince(_lastChecked);
+  }, 30000);
+};
+const stopSinceTimer = () => {
+  if (_sinceTimer == null) return;
+  clearInterval(_sinceTimer);
+  _sinceTimer = null;
+};
+startSinceTimer();
 
 // ─── time machine ────────────────────────────────────────────
 const renderTimeMachine = () => {
   const total = _state.data.history.length;
   const onLive = _state.idx === total - 1;
   const checked = new Date(_state.data.history[_state.idx].checked_at);
-  const niceDate = checked.toLocaleDateString(undefined, {
-    weekday: "short", month: "short", day: "numeric",
+  const niceDate = checked.toLocaleDateString("en-US", {
+    timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric",
   });
   document.getElementById("tm-date").textContent = niceDate;
   document.getElementById("tm-counter").textContent = `${_state.idx + 1} / ${total}`;
@@ -1589,7 +1653,13 @@ const stepSession = (delta) => {
   applySession();
 };
 
+// Animate counters/sparklines only on the first render. Session navigation
+// (←/→, ↪ Live, Escape) gets instant updates so it feels like scrubbing,
+// not a slot machine.
+let _firstRender = true;
 const applySession = () => {
+  const animate = _firstRender;
+  _firstRender = false;
   const history = _state.data.history;
   const histSlice = history.slice(0, _state.idx + 1);
   const last = histSlice[histSlice.length - 1];
@@ -1597,11 +1667,11 @@ const applySession = () => {
   renderTimeMachine();
   renderMeta(last, history.length);
   renderMarquee(last, prev);
-  renderHero(last, prev);
+  renderHero(last, prev, { animate });
   renderWatch(histSlice);
-  renderKPIs(last);
+  renderKPIs(last, { animate });
   renderBreaking(histSlice);
-  renderTable(last, prev, histSlice);
+  renderTable(last, prev, histSlice, { animate });
 };
 
 // ─── keyboard shortcuts ──────────────────────────────────────
@@ -1640,6 +1710,7 @@ document.addEventListener("keydown", (e) => {
   // Escape → clear filter, jump to live, collapse all, drop cursor
   if (e.key === "Escape") {
     document.getElementById("filter-input").value = "";
+    document.getElementById("filter-clear").hidden = true;
     _state.filter = "";
     _state.expanded.clear();
     _state.cursor = null;
@@ -1702,13 +1773,38 @@ fetch("data/state.json", { cache: "no-store" })
       _state.idx = _state.data.history.length - 1;
       applySession();
     });
-    document.getElementById("filter-input").addEventListener("input", (e) => {
-      _state.filter = e.target.value;
+    const filterInput = document.getElementById("filter-input");
+    const filterClear = document.getElementById("filter-clear");
+    const reRenderFilter = () => {
       const history = _state.data.history;
       const histSlice = history.slice(0, _state.idx + 1);
       const last = histSlice[histSlice.length - 1];
       const prev = histSlice.length >= 2 ? histSlice[histSlice.length - 2] : null;
       renderTable(last, prev, histSlice, { animate: false });
+    };
+    filterInput.addEventListener("input", (e) => {
+      _state.filter = e.target.value;
+      filterClear.hidden = e.target.value.length === 0;
+      reRenderFilter();
+    });
+    filterClear.addEventListener("click", () => {
+      filterInput.value = "";
+      _state.filter = "";
+      filterClear.hidden = true;
+      reRenderFilter();
+      filterInput.focus();
+    });
+
+    // Pause CSS animations + drop the 30s "ago" interval when the tab isn't visible.
+    document.addEventListener("visibilitychange", () => {
+      const hidden = document.hidden;
+      document.body.classList.toggle("tab-hidden", hidden);
+      if (hidden) {
+        stopSinceTimer();
+      } else {
+        if (_lastChecked) document.getElementById("s-since").textContent = timeSince(_lastChecked);
+        startSinceTimer();
+      }
     });
   })
   .catch((err) => {
