@@ -100,6 +100,29 @@
     main { padding: 16px 16px 64px; }
   }
 
+  /* ───────── STALE-DATA BANNER ───────── */
+  .stale-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 18px;
+    margin-bottom: 12px;
+    background: rgba(255,200,87,0.08);
+    border: 1px solid rgba(255,200,87,0.55);
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--amber);
+  }
+  .stale-banner[hidden] { display: none; }
+  .stale-banner::before {
+    content: "⚠";
+    font-size: 14px;
+    line-height: 1;
+  }
+  .stale-banner b { color: #ffe5a8; font-weight: 700; }
+
   /* ───────── STATUS BAR ───────── */
   .status-bar {
     display: flex;
@@ -834,11 +857,23 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+    /* Marquee uses translateX(-50%) at 100% — collapsing duration leaves the
+       track parked at -50% offset, hiding the first half of the doubled
+       content. Force it back to its natural origin and stop animating. */
+    .marquee-track {
+      animation: none !important;
+      transform: none !important;
+    }
   }
 </style>
 </head>
 <body>
 <main>
+
+  <!-- STALE-DATA BANNER (shown only when cron has missed an expected run) -->
+  <div class="stale-banner reveal reveal-1" id="stale-banner" hidden>
+    Data hasn't refreshed since <b id="stale-when">—</b>. Cron may have failed.
+  </div>
 
   <!-- STATUS BAR -->
   <div class="status-bar reveal reveal-1">
@@ -1442,6 +1477,29 @@ const renderTable = (last, prev, history, opts = {}) => {
 // ─── meta / status ───────────────────────────────────────────
 let _lastChecked = null;
 
+// Cron runs weekdays at 16:07 ET. "Stale" means: it's a weekday past 17:00 ET
+// (cron's grace window) AND the most recent update isn't from today (ET).
+// Weekends and pre-cron weekday hours never trigger — that's expected aging.
+const isDataStale = (checked) => {
+  if (!checked) return false;
+  const tz = "America/New_York";
+  const now = new Date();
+  const fmtParts = (d) => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, weekday: "short", year: "numeric", month: "2-digit",
+      day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(d).reduce((a, p) => (a[p.type] = p.value, a), {});
+    return parts;
+  };
+  const nowET  = fmtParts(now);
+  const lastET = fmtParts(checked);
+  if (nowET.weekday === "Sat" || nowET.weekday === "Sun") return false;
+  const minutesIntoDay = Number(nowET.hour) * 60 + Number(nowET.minute);
+  if (minutesIntoDay < 17 * 60) return false;       // before 17:00 ET grace cutoff
+  // Same Y-M-D in ET means cron ran today.
+  return !(nowET.year === lastET.year && nowET.month === lastET.month && nowET.day === lastET.day);
+};
+
 const renderMeta = (last, totalSessions) => {
   const checked = new Date(last.checked_at);
   _lastChecked = checked;
@@ -1455,6 +1513,19 @@ const renderMeta = (last, totalSessions) => {
   document.getElementById("s-since").textContent = timeSince(checked);
   document.getElementById("c-when").textContent = `${longDate}, ${time}`;
   document.getElementById("c-runs").textContent = totalSessions;
+
+  // Only flag staleness on the latest session, not when scrubbing through history.
+  const banner = document.getElementById("stale-banner");
+  if (banner) {
+    const onLatest = _state.idx === _state.data.history.length - 1;
+    const stale = onLatest && isDataStale(checked);
+    if (stale) {
+      document.getElementById("stale-when").textContent = `${longDate}, ${time}`;
+      banner.hidden = false;
+    } else {
+      banner.hidden = true;
+    }
+  }
 };
 
 setInterval(() => {
