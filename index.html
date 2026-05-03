@@ -47,6 +47,17 @@
     --mono:        "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   }
 
+  /* visually hidden but screen-reader accessible (landmarks, captions) */
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   /* ───── selection + scrollbar (theme tie-ins) ───── */
   ::selection { background: rgba(0,255,136,0.28); color: #fff; }
   ::-webkit-scrollbar { width: 12px; height: 12px; }
@@ -339,6 +350,8 @@
     margin-bottom: 16px;
   }
   .watch-title {
+    /* margin reset because this is now an <h2> */
+    margin: 0;
     font-size: 16px; font-weight: 700; letter-spacing: -0.005em;
   }
   .watch-title .t {
@@ -541,6 +554,8 @@
   }
   .section-head .left { display: flex; align-items: center; gap: 14px; }
   .section-title {
+    /* margin reset because this is now an <h2> */
+    margin: 0;
     font-size: 22px; font-weight: 700;
     letter-spacing: -0.015em;
   }
@@ -901,6 +916,7 @@
   <!-- HERO + WATCH -->
   <section class="hero-grid reveal reveal-2">
     <div class="card hero" id="hero">
+      <h2 class="sr-only">Lead — cheapest-for-growth pick</h2>
       <div class="card-eyebrow">
         <b>● LEAD</b> Cheapest-for-growth <span class="pill" id="lead-meta">PEG · live</span>
       </div>
@@ -914,7 +930,7 @@
 
     <aside class="card watch">
       <div class="watch-head">
-        <div class="watch-title">Position Watch <span class="t">META</span></div>
+        <h2 class="watch-title">Position Watch <span class="t">META</span></h2>
         <div class="watch-tag">Thesis</div>
       </div>
       <div class="watch-grid">
@@ -942,8 +958,9 @@
   </section>
 
   <!-- BREAKING -->
-  <section class="breaking reveal reveal-3" id="breaking">
-    <div class="breaking-tag">Live Tape</div>
+  <section class="breaking reveal reveal-3" id="breaking" aria-labelledby="breaking-heading">
+    <h2 id="breaking-heading" class="sr-only">Live Tape — overnight regime changes</h2>
+    <div class="breaking-tag" aria-hidden="true">Live Tape</div>
     <ul class="breaking-list" id="breaking-list">
       <li class="breaking-empty">no regime changes overnight.</li>
     </ul>
@@ -966,14 +983,14 @@
   <section class="reveal reveal-4">
     <div class="section-head">
       <div class="left">
-        <div class="section-title">The Tape</div>
-        <input class="filter-input" id="filter-input" type="text" placeholder="filter by ticker…" autocomplete="off" spellcheck="false" />
+        <h2 class="section-title">The Tape</h2>
+        <input class="filter-input" id="filter-input" type="text" placeholder="filter by ticker…" aria-label="Filter table by ticker symbol" autocomplete="off" spellcheck="false" />
       </div>
-      <div class="kbd-hints">
-        <span><span class="kbd">/</span> filter</span>
-        <span><span class="kbd">←</span><span class="kbd">→</span> session</span>
-        <span><span class="kbd">s</span> sort</span>
-        <span><span class="kbd">esc</span> reset</span>
+      <div class="kbd-hints" aria-label="Keyboard shortcuts">
+        <span><kbd class="kbd">/</kbd> filter</span>
+        <span><kbd class="kbd">←</kbd><kbd class="kbd">→</kbd> session</span>
+        <span><kbd class="kbd">s</kbd> sort</span>
+        <span><kbd class="kbd">esc</kbd> reset</span>
       </div>
     </div>
     <div class="table-wrap" id="tape">
@@ -1081,7 +1098,7 @@ const timeSince = (date) => {
 
 // ─── sparkline ───────────────────────────────────────────────
 const sparkline = (values, opts = {}) => {
-  const { w = 110, h = 30, baselineAt = null, animate = true, area = true, forceColor = null } = opts;
+  const { w = 110, h = 30, baselineAt = null, animate = true, area = true, forceColor = null, title = "" } = opts;
   const clean = values.map((v) => (v == null || Number.isNaN(v) ? null : Number(v)));
   const present = clean.filter((v) => v != null);
   if (present.length < 2) return "";
@@ -1125,7 +1142,13 @@ const sparkline = (values, opts = {}) => {
   }
 
   const drawCls = animate ? "draw" : "";
-  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="color:${stroke}">
+  // SVG <title> = accessible name for the graphic; first child is the convention.
+  const titleEl = title
+    ? `<title>${String(title).replace(/[<&]/g, (c) => c === "<" ? "&lt;" : "&amp;")}</title>`
+    : "";
+  const role = title ? ' role="img"' : ' aria-hidden="true"';
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="color:${stroke}"${role}>
+    ${titleEl}
     ${baseline}
     ${areaPoly}
     <polyline class="${drawCls}" points="${points}" stroke="${stroke}" stroke-width="1.6" style="--spark-len:${len}"/>
@@ -1256,7 +1279,7 @@ const renderWatch = (history) => {
   document.getElementById("w-eps").innerHTML   = `${epsPct != null ? epsPct.toFixed(1) + "%" : "—"} <span class="delta-inline">${deltaSpan(epsDelta, "pp", 1)}</span>`;
 
   const series = history.slice(-30).map((h) => h.rows.find((r) => r.ticker === THESIS)?.peg ?? null);
-  const html = sparkline(series, { w: 320, h: 60, baselineAt: 1.0, area: true, forceColor: "var(--cyan)" });
+  const html = sparkline(series, { w: 320, h: 60, baselineAt: 1.0, area: true, forceColor: "var(--cyan)", title: `${THESIS} PEG ratio over the last 30 sessions, baseline 1.0` });
   const svg = document.getElementById("w-spark");
   if (svg && html) {
     svg.outerHTML = html
@@ -1370,7 +1393,10 @@ const renderTable = (last, prev, history, opts = {}) => {
   const head = `<thead><tr>${COLS.map((c) => {
     const cls = (c.sortable === false ? "nosort" : "") +
                 (sortKey === c.key ? (sortDir === "asc" ? " sort-asc" : " sort-desc") : "");
-    return `<th class="${cls.trim()}" data-key="${c.key}">${c.label}${c.sortable === false ? "" : '<span class="arrow"></span>'}</th>`;
+    const ariaSort = c.sortable === false
+      ? ""
+      : ` aria-sort="${sortKey === c.key ? (sortDir === "asc" ? "ascending" : "descending") : "none"}"`;
+    return `<th class="${cls.trim()}" scope="col" data-key="${c.key}"${ariaSort}>${c.label}${c.sortable === false ? "" : '<span class="arrow" aria-hidden="true"></span>'}</th>`;
   }).join("")}</tr></thead>`;
 
   const rows = sorted.map((r) => {
@@ -1411,22 +1437,22 @@ const renderTable = (last, prev, history, opts = {}) => {
       <td class="peg-cell"><span class="peg-bg" style="background:${pegBg}"></span><span class="peg-val">${fmt(r.peg)}</span></td>
       <td>${deltaSpan(pegAbs, "", 2)}</td>
       <td>${fmt(epsG, 1)}${epsG != null ? "%" : ""}</td>
-      <td class="spark">${sparkline(sparkData(r.ticker), { w: 110, h: 30, baselineAt: 1.0, animate })}</td>
+      <td class="spark">${sparkline(sparkData(r.ticker), { w: 110, h: 30, baselineAt: 1.0, animate, title: `${r.ticker} PEG over last 30 sessions` })}</td>
     </tr>`;
 
     const expandRow = `<tr class="expand-row"><td colspan="${COLS.length}">
       <div class="expand-charts">
         <div class="expand-chart">
           <div class="chart-head"><span>Price · 30d</span><span class="v">${fmt(r.price)}</span></div>
-          ${sparkline(seriesData(r.ticker, "price"), { w: 280, h: 56, animate: false }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
+          ${sparkline(seriesData(r.ticker, "price"), { w: 280, h: 56, animate: false, title: `${r.ticker} price, last 30 sessions` }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
         </div>
         <div class="expand-chart">
           <div class="chart-head"><span>PEG · 30d</span><span class="v">${fmt(r.peg)}</span></div>
-          ${sparkline(seriesData(r.ticker, "peg"), { w: 280, h: 56, baselineAt: 1.0, animate: false }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
+          ${sparkline(seriesData(r.ticker, "peg"), { w: 280, h: 56, baselineAt: 1.0, animate: false, title: `${r.ticker} PEG, last 30 sessions, baseline 1.0` }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
         </div>
         <div class="expand-chart">
           <div class="chart-head"><span>Fwd P/E · 30d</span><span class="v">${fmt(r.forward_pe)}</span></div>
-          ${sparkline(seriesData(r.ticker, "forward_pe"), { w: 280, h: 56, animate: false }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
+          ${sparkline(seriesData(r.ticker, "forward_pe"), { w: 280, h: 56, animate: false, title: `${r.ticker} forward P/E, last 30 sessions` }) || '<div style="color:var(--text-mute);font-size:11px">— not enough history —</div>'}
         </div>
       </div>
     </td></tr>`;
@@ -1434,9 +1460,11 @@ const renderTable = (last, prev, history, opts = {}) => {
     return dataRow + expandRow;
   }).join("");
 
+  const sortLabel = (COLS.find((c) => c.key === sortKey) || {}).label || sortKey;
+  const caption = `<caption class="sr-only">Mag 7 valuation snapshot, sorted by ${sortLabel} ${sortDir === "asc" ? "ascending" : "descending"}. ${sorted.length} ticker${sorted.length === 1 ? "" : "s"} shown.</caption>`;
   const tableHtml = sorted.length === 0
     ? `<div class="empty">no tickers match "${filterTxt}"</div>`
-    : `<table class="ledger" id="content">${head}<tbody>${rows}</tbody></table>`;
+    : `<table class="ledger" id="content">${caption}${head}<tbody>${rows}</tbody></table>`;
 
   const target = document.getElementById("content");
   target.outerHTML = tableHtml.startsWith("<div")
