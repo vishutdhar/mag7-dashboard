@@ -1,69 +1,7 @@
 {
-  "last_checked_at": "2026-09-04T20:07:14.995323+00:00",
+  "last_checked_at": "2026-09-08T20:07:27.648500+00:00",
   "last_winner": "NVDA",
   "history": [
-    {
-      "checked_at": "2026-06-10T20:07:38.057049+00:00",
-      "rows": [
-        {
-          "ticker": "AAPL",
-          "price": 291.58,
-          "trailing_pe": 35.34303,
-          "forward_pe": 30.394382,
-          "peg": 2.42,
-          "eps_growth": 0.218
-        },
-        {
-          "ticker": "MSFT",
-          "price": 397.36,
-          "trailing_pe": 23.68057,
-          "forward_pe": 20.54349,
-          "peg": 1.27,
-          "eps_growth": 0.234
-        },
-        {
-          "ticker": "GOOGL",
-          "price": 356.38,
-          "trailing_pe": 27.18383,
-          "forward_pe": 24.63638,
-          "peg": 1.43,
-          "eps_growth": 0.82
-        },
-        {
-          "ticker": "AMZN",
-          "price": 238.0,
-          "trailing_pe": 30.829016,
-          "forward_pe": 24.13803,
-          "peg": 1.83,
-          "eps_growth": 0.748
-        },
-        {
-          "ticker": "META",
-          "price": 570.98,
-          "trailing_pe": 20.77802,
-          "forward_pe": 15.78945,
-          "peg": 0.85,
-          "eps_growth": 0.624
-        },
-        {
-          "ticker": "NVDA",
-          "price": 200.42,
-          "trailing_pe": 30.64526,
-          "forward_pe": 15.7474375,
-          "peg": 0.64,
-          "eps_growth": 2.145
-        },
-        {
-          "ticker": "TSLA",
-          "price": 381.59,
-          "trailing_pe": 356.62616,
-          "forward_pe": 152.63905,
-          "peg": 5.63,
-          "eps_growth": 0.083
-        }
-      ],
-      "winner": "NVDA"
-    },
     {
       "checked_at": "2026-06-11T20:07:10.614980+00:00",
       "rows": [
@@ -3717,6 +3655,68 @@
           "trailing_pe": 324.84402,
           "forward_pe": 164.03375,
           "peg": 4.5,
+          "eps_growth": -0.03
+        }
+      ],
+      "winner": "NVDA"
+    },
+    {
+      "checked_at": "2026-09-08T20:07:27.648500+00:00",
+      "rows": [
+        {
+          "ticker": "AAPL",
+          "price": 316.22,
+          "trailing_pe": 36.18078,
+          "forward_pe": 33.02783,
+          "peg": 2.52,
+          "eps_growth": 0.287
+        },
+        {
+          "ticker": "MSFT",
+          "price": 493.95,
+          "trailing_pe": 27.533445,
+          "forward_pe": 20.95381,
+          "peg": 1.62,
+          "eps_growth": 0.317
+        },
+        {
+          "ticker": "GOOGL",
+          "price": 338.36,
+          "trailing_pe": 16.968906,
+          "forward_pe": 22.779003,
+          "peg": 1.25,
+          "eps_growth": 2.94
+        },
+        {
+          "ticker": "AMZN",
+          "price": 256.97,
+          "trailing_pe": 20.67337,
+          "forward_pe": 24.707893,
+          "peg": 1.51,
+          "eps_growth": 2.423
+        },
+        {
+          "ticker": "META",
+          "price": 613.48,
+          "trailing_pe": 23.132729,
+          "forward_pe": 17.548225,
+          "peg": 0.82,
+          "eps_growth": -0.134
+        },
+        {
+          "ticker": "NVDA",
+          "price": 225.73,
+          "trailing_pe": 28.573418,
+          "forward_pe": 14.54534,
+          "peg": 0.59,
+          "eps_growth": 1.278
+        },
+        {
+          "ticker": "TSLA",
+          "price": 368.16,
+          "trailing_pe": 334.69092,
+          "forward_pe": 170.55656,
+          "peg": 4.23,
           "eps_growth": -0.03
         }
       ],
